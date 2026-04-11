@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # PostgreSQL - FHIR + Audit data
+  postgres:
+    image: postgres:15-alpine
+    container_name: ai-hos-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: fhir_audit
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai-hos-network
+
+  # MongoDB - Clinical notes
+  mongodb:
+    image: mongo:6.0
+    container_name: ai-hos-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-admin}
+    networks:
+      - ai-hos-network
+
+  # Redis - Caching + Sessions
+  redis:
+    image: redis:7-alpine
+    container_name: ai-hos-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - ai-hos-network
+
+  # Ollama - Local LLM (optional, for development)
+  ollama:
+    image: ollama/ollama
+    container_name: ai-hos-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - ai-hos-network
+
+  # MinIO - Object storage (S3-compatible)
+  minio:
+    image: minio/minio
+    container_name: ai-hos-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-minioadmin}
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - ai-hos-network
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  redis_data:
+  ollama_data:
+  minio_data:
+
+networks:
+  ai-hos-network:
+    driver: bridge

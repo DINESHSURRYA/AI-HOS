@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Clinical Documentation AI Service
+  clinical-doc-ai:
+    build:
+      context: ../../services/clinical-doc-ai
+      dockerfile: Dockerfile
+    container_name: ai-hos-clinical-doc
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb://admin:${MONGO_PASSWORD:-admin}@mongodb:27017/clinical_notes?authSource=admin
+      - POSTGRES_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/fhir_audit
+      - REDIS_URL=redis://redis:6379/0
+      - LLM_BASE_URL=http://ollama:11434/v1
+      - WHISPER_DEVICE=cpu
+      - LOG_LEVEL=INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
+      redis:
+        condition: service_started
+    networks:
+      - ai-hos-network
+    restart: unless-stopped
+
+  # Prior Authorization Engine
+  prior-auth-engine:
+    build:
+      context: ../../services/prior-auth-engine
+      dockerfile: Dockerfile
+    container_name: ai-hos-prior-auth
+    ports:
+      - "8001:8000"
+    environment:
+      - POSTGRES_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/fhir_audit
+      - REDIS_URL=redis://redis:6379/1
+      - LOG_LEVEL=INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - ai-hos-network
+    restart: unless-stopped
+
+networks:
+  ai-hos-network:
+    external: true
+4. Frontend Dashboard (React + Vite)
