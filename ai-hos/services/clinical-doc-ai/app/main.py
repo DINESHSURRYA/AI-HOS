@@ -1,13 +1,18 @@
-"""FastAPI application for Clinical Documentation AI Service."""
+"""FastAPI application for Clinical Documentation AI Service (v2.0)."""
+from contextlib import asynccontextmanager
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 import structlog
 
 from app.api.endpoints import router
+from app.core.asr_pipeline import get_asr_pipeline
 from app.core.config import settings
+from app.core.nlp_pipeline import get_nlp_pipeline
+from app.db.mongodb import get_db
 
-# Configure structured logging
+logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
+
 structlog.configure(
     processors=[
         structlog.stdlib.filter_by_level,
@@ -18,7 +23,7 @@ structlog.configure(
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
-        structlog.processors.JSONRenderer()
+        structlog.processors.JSONRenderer(),
     ],
     context_class=dict,
     logger_factory=structlog.stdlib.LoggerFactory(),
@@ -29,59 +34,67 @@ structlog.configure(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan events."""
-    # Startup
+    """Initialize database and warm lightweight pipelines on startup."""
     logger = structlog.get_logger()
+    await get_db().initialize()
     logger.info(
         "service_starting",
         app=settings.APP_NAME,
-        env=settings.ENV
+        version=settings.APP_VERSION,
+        env=settings.ENV,
+        storage=get_db().backend,
     )
-    
-    # Pre-load models (optional - can lazy-load)
-    # from app.core.asr_pipeline import get_asr_pipeline
-    # get_asr_pipeline()
-    
     yield
-    
-    # Shutdown
-    logger.info("service_shutting_down")
+    logger.info("service_shutting_down", app=settings.APP_NAME)
 
 
 app = FastAPI(
-    title="Clinical Documentation AI",
-    description="AI-powered clinical note generation from voice",
-    version="1.0.0",
-    lifespan=lifespan
+    title="AI-HOS Clinical Documentation AI",
+    description=(
+        "HIPAA-compliant clinical voice/text documentation, medical entity coding "
+        "(ICD-10 / RxNorm / CPT), structured SOAP note generation, and FHIR R4 export."
+    ),
+    version=settings.APP_VERSION,
+    lifespan=lifespan,
 )
 
-# CORS - restrict in production
+origins = (
+    ["*"]
+    if settings.ALLOWED_ORIGINS.strip() == "*"
+    else [o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()]
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Set to specific origins in production
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include routes
 app.include_router(router)
 
-# Health check
+
 @app.get("/health")
 async def health_check():
     return {
         "status": "healthy",
         "service": settings.APP_NAME,
-        "version": "1.0.0"
+        "version": settings.APP_VERSION,
+        "storage_backend": get_db().backend,
+        "asr_engine": get_asr_pipeline().engine_name,
+        "nlp_engine": get_nlp_pipeline().engine_name,
+        "llm_mode": settings.LLM_MODEL if settings.ENABLE_LLM_GENERATION else "local-clinical-engine-v2",
+        "phi_redaction_enabled": settings.PHI_REDACTION_ENABLED,
     }
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=8000,
-        reload=settings.ENV == "development"
+        port=settings.PORT,
+        reload=settings.ENV == "development",
     )

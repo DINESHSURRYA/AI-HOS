@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  # Clinical Documentation AI Service
+  # Clinical Documentation AI Service (Port 8000)
   clinical-doc-ai:
     build:
       context: ../../services/clinical-doc-ai
@@ -10,45 +8,35 @@ services:
     ports:
       - "8000:8000"
     environment:
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-sqlite}
       - MONGODB_URL=mongodb://admin:${MONGO_PASSWORD:-admin}@mongodb:27017/clinical_notes?authSource=admin
       - POSTGRES_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/fhir_audit
       - REDIS_URL=redis://redis:6379/0
+      - ENABLE_LLM_GENERATION=${ENABLE_LLM_GENERATION:-false}
       - LLM_BASE_URL=http://ollama:11434/v1
-      - WHISPER_DEVICE=cpu
+      - LLM_MODEL=${LLM_MODEL:-llama3.1:8b}
       - LOG_LEVEL=INFO
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mongodb:
-        condition: service_started
-      redis:
-        condition: service_started
     networks:
       - ai-hos-network
     restart: unless-stopped
 
-  # Prior Authorization Engine
+  # Prior Authorization Engine (Port 8001)
   prior-auth-engine:
     build:
       context: ../../services/prior-auth-engine
       dockerfile: Dockerfile
     container_name: ai-hos-prior-auth
     ports:
-      - "8001:8000"
+      - "8001:8001"
     environment:
       - POSTGRES_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/fhir_audit
       - REDIS_URL=redis://redis:6379/1
       - LOG_LEVEL=INFO
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
     networks:
       - ai-hos-network
     restart: unless-stopped
 
 networks:
   ai-hos-network:
-    external: true
-4. Frontend Dashboard (React + Vite)
+    name: ai-hos-network
+    driver: bridge

@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
-  # PostgreSQL - FHIR + Audit data
+  # PostgreSQL - FHIR R4 + HIPAA Audit Data
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: ai-hos-postgres
     environment:
       POSTGRES_USER: postgres
@@ -13,18 +11,18 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
+      - ../postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fhir_audit"]
       interval: 5s
       timeout: 5s
       retries: 5
     networks:
       - ai-hos-network
 
-  # MongoDB - Clinical notes
+  # MongoDB - Unstructured Clinical Notes (optional)
   mongodb:
-    image: mongo:6.0
+    image: mongo:7.0
     container_name: ai-hos-mongodb
     ports:
       - "27017:27017"
@@ -36,7 +34,7 @@ services:
     networks:
       - ai-hos-network
 
-  # Redis - Caching + Sessions
+  # Redis - Caching & Sessions
   redis:
     image: redis:7-alpine
     container_name: ai-hos-redis
@@ -48,27 +46,20 @@ services:
     networks:
       - ai-hos-network
 
-  # Ollama - Local LLM (optional, for development)
+  # Ollama - Local LLM (optional; works on CPU or GPU)
   ollama:
-    image: ollama/ollama
+    image: ollama/ollama:latest
     container_name: ai-hos-ollama
     ports:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
     networks:
       - ai-hos-network
 
-  # MinIO - Object storage (S3-compatible)
+  # MinIO - S3-Compatible Audio & Document Storage
   minio:
-    image: minio/minio
+    image: minio/minio:latest
     container_name: ai-hos-minio
     ports:
       - "9000:9000"
@@ -91,4 +82,5 @@ volumes:
 
 networks:
   ai-hos-network:
+    name: ai-hos-network
     driver: bridge

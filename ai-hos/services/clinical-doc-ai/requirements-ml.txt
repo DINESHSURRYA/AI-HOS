@@ -1,0 +1,15 @@
+# Optional Full ML & Distributed Infrastructure Add-ons (Python 3.11-3.12 GPU/Docker)
+# Install on top of requirements.txt when running with local WhisperX + BioClinicalBERT + MongoDB
+torch>=2.2.0
+transformers>=4.40.0
+whisperx>=3.1.1
+spacy>=3.7.2
+scispacy>=0.5.3
+pymongo>=4.8.0
+motor>=3.5.0
+sqlalchemy>=2.0.30
+asyncpg>=0.29.0
+redis>=5.0.8
+librosa>=0.10.2
+soundfile>=0.12.1
+prometheus-client>=0.20.0

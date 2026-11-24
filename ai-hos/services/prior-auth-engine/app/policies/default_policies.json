@@ -1,0 +1,255 @@
+[
+  {
+    "policy_id": "UHC-MRI-KNEE-001",
+    "payer_id": "UHC",
+    "payer_name": "UnitedHealthcare",
+    "policy_title": "MRI of the Lower Extremity / Knee (CPT 73706 / 73721)",
+    "procedure_codes": ["73706", "73721"],
+    "diagnosis_codes": ["M17.11", "M17.12", "M25.561", "M25.562", "S83.209A"],
+    "rules": [
+      {
+        "field": "age",
+        "operator": "gte",
+        "value": 18,
+        "weight": 1.0,
+        "description": "Adult patient (age >= 18)"
+      },
+      {
+        "field": "procedure_code",
+        "operator": "in",
+        "value": ["73706", "73721"],
+        "weight": 1.5,
+        "description": "Covered knee MRI CPT code"
+      }
+    ],
+    "medical_necessity": {
+      "description": "Documented conservative therapy failure (physical therapy and/or NSAIDs) for >= 6 weeks or acute meniscal/ligament injury.",
+      "required_evidence": [
+        "Failed conservative therapy (PT / NSAIDs)",
+        "Prior weight-bearing knee X-ray report",
+        "Physical exam findings (tenderness, effusion, or ROM deficit)"
+      ],
+      "duration_requirement": "6_weeks"
+    },
+    "auto_approve_threshold": 0.80,
+    "auto_deny_threshold": 0.35,
+    "version": "2.0",
+    "effective_date": "2026-01-01T00:00:00Z"
+  },
+  {
+    "policy_id": "AETNA-MRI-SPINE-001",
+    "payer_id": "Aetna",
+    "payer_name": "Aetna Health",
+    "policy_title": "Lumbar Spine MRI without Contrast (CPT 72148)",
+    "procedure_codes": ["72148"],
+    "diagnosis_codes": ["M54.16", "M54.50", "M51.26"],
+    "rules": [
+      {
+        "field": "age",
+        "operator": "gte",
+        "value": 18,
+        "weight": 1.0,
+        "description": "Adult patient (age >= 18)"
+      },
+      {
+        "field": "procedure_code",
+        "operator": "eq",
+        "value": "72148",
+        "weight": 1.5,
+        "description": "Lumbar spine MRI CPT 72148"
+      }
+    ],
+    "medical_necessity": {
+      "description": "Persistent radiculopathy or low back pain failing 6 weeks of conservative care, or red-flag neurological deficits.",
+      "required_evidence": [
+        "6 weeks conservative management",
+        "Neurological exam / straight-leg raise documentation"
+      ],
+      "duration_requirement": "6_weeks"
+    },
+    "auto_approve_threshold": 0.80,
+    "auto_deny_threshold": 0.35,
+    "version": "2.0",
+    "effective_date": "2026-01-01T00:00:00Z"
+  },
+  {
+    "policy_id": "UHC-ECHO-CARDIO-001",
+    "payer_id": "UHC",
+    "payer_name": "UnitedHealthcare",
+    "policy_title": "Transthoracic Echocardiogram (CPT 93306)",
+    "procedure_codes": ["93306"],
+    "diagnosis_codes": ["I50.9", "I48.91", "I25.10", "I10"],
+    "rules": [
+      {
+        "field": "age",
+        "operator": "gte",
+        "value": 18,
+        "weight": 1.0,
+        "description": "Adult cardiology evaluation"
+      },
+      {
+        "field": "procedure_code",
+        "operator": "eq",
+        "value": "93306",
+        "weight": 1.5,
+        "description": "Transthoracic Echocardiogram with Doppler"
+      }
+    ],
+    "medical_necessity": {
+      "description": "Clinical signs of heart failure, dyspnea, edema, arrhythmia, or suspected structural heart disease.",
+      "required_evidence": [
+        "Cardiopulmonary exam / dyspnea or edema documentation",
+        "Recent EKG or BNP lab result"
+      ],
+      "duration_requirement": null
+    },
+    "auto_approve_threshold": 0.78,
+    "auto_deny_threshold": 0.30,
+    "version": "2.0",
+    "effective_date": "2026-01-01T00:00:00Z"
+  },
+  {
+    "policy_id": "BCBS-CT-CHEST-001",
+    "payer_id": "BCBS",
+    "payer_name": "Blue Cross Blue Shield",
+    "policy_title": "CT Thorax / Chest Diagnostic Imaging (CPT 71250)",
+    "procedure_codes": ["71250"],
+    "diagnosis_codes": ["J44.1", "J44.9", "J18.9", "J45.909"],
+    "rules": [
+      {
+        "field": "age",
+        "operator": "gte",
+        "value": 18,
+        "weight": 1.0,
+        "description": "Adult pulmonary diagnostic imaging"
+      },
+      {
+        "field": "procedure_code",
+        "operator": "eq",
+        "value": "71250",
+        "weight": 1.5,
+        "description": "Diagnostic Chest CT"
+      }
+    ],
+    "medical_necessity": {
+      "description": "Persistent or worsening dyspnea, refractory COPD exacerbation, or abnormal chest radiograph.",
+      "required_evidence": [
+        "Prior chest X-ray findings",
+        "Pulmonary exam & oxygen saturation"
+      ],
+      "duration_requirement": null
+    },
+    "auto_approve_threshold": 0.78,
+    "auto_deny_threshold": 0.35,
+    "version": "2.0",
+    "effective_date": "2026-01-01T00:00:00Z"
+  },
+  {
+    "policy_id": "CIGNA-COLONOSCOPY-001",
+    "payer_id": "Cigna",
+    "payer_name": "Cigna Healthcare",
+    "policy_title": "Diagnostic / Screening Colonoscopy (CPT 45378)",
+    "procedure_codes": ["45378"],
+    "diagnosis_codes": ["Z12.11", "K21.9", "D64.9"],
+    "rules": [
+      {
+        "field": "age",
+        "operator": "gte",
+        "value": 45,
+        "weight": 2.0,
+        "description": "USPSTF screening age >= 45"
+      },
+      {
+        "field": "procedure_code",
+        "operator": "eq",
+        "value": "45378",
+        "weight": 1.0,
+        "description": "Flexible colonoscopy"
+      }
+    ],
+    "medical_necessity": {
+      "description": "Preventive colorectal screening (age >= 45) or diagnostic workup for GI bleeding/anemia.",
+      "required_evidence": [
+        "GI history or preventive screening eligibility"
+      ],
+      "duration_requirement": null
+    },
+    "auto_approve_threshold": 0.78,
+    "auto_deny_threshold": 0.35,
+    "version": "2.0",
+    "effective_date": "2026-01-01T00:00:00Z"
+  },
+  {
+    "policy_id": "MEDICARE-TKA-001",
+    "payer_id": "Medicare",
+    "payer_name": "CMS Medicare",
+    "policy_title": "Total Knee Arthroplasty (CPT 27447)",
+    "procedure_codes": ["27447"],
+    "diagnosis_codes": ["M17.11", "M17.12"],
+    "rules": [
+      {
+        "field": "age",
+        "operator": "gte",
+        "value": 50,
+        "weight": 1.5,
+        "description": "Patient age >= 50 for primary joint replacement"
+      },
+      {
+        "field": "procedure_code",
+        "operator": "eq",
+        "value": "27447",
+        "weight": 1.0,
+        "description": "Total knee arthroplasty"
+      }
+    ],
+    "medical_necessity": {
+      "description": "Severe osteoarthritis with radiographic joint-space narrowing failing >= 3 months of conservative therapy.",
+      "required_evidence": [
+        "Failed conservative therapy (>= 3 months)",
+        "Weight-bearing knee radiographs showing Kellgren-Lawrence Grade 3-4 OA",
+        "Functional impairment documentation"
+      ],
+      "duration_requirement": "3_months"
+    },
+    "auto_approve_threshold": 0.85,
+    "auto_deny_threshold": 0.40,
+    "version": "2.0",
+    "effective_date": "2026-01-01T00:00:00Z"
+  },
+  {
+    "policy_id": "AETNA-SLEEP-001",
+    "payer_id": "Aetna",
+    "payer_name": "Aetna Health",
+    "policy_title": "Polysomnography / Diagnostic Sleep Study (CPT 95810)",
+    "procedure_codes": ["95810"],
+    "diagnosis_codes": ["G47.33"],
+    "rules": [
+      {
+        "field": "age",
+        "operator": "gte",
+        "value": 18,
+        "weight": 1.0,
+        "description": "Adult diagnostic sleep evaluation"
+      },
+      {
+        "field": "procedure_code",
+        "operator": "eq",
+        "value": "95810",
+        "weight": 1.5,
+        "description": "Diagnostic polysomnography"
+      }
+    ],
+    "medical_necessity": {
+      "description": "Suspected obstructive sleep apnea with snoring, witnessed apneas, daytime fatigue, or elevated BMI.",
+      "required_evidence": [
+        "STOP-BANG or Epworth Sleepiness Scale score",
+        "Cardiopulmonary / airway exam"
+      ],
+      "duration_requirement": null
+    },
+    "auto_approve_threshold": 0.78,
+    "auto_deny_threshold": 0.35,
+    "version": "2.0",
+    "effective_date": "2026-01-01T00:00:00Z"
+  }
+]
